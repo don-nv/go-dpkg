@@ -1,0 +1,4 @@
+/*
+Package dchan
+*/
+package dchan

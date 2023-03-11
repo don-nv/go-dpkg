@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  grafana:
+    image: grafana/grafana
+    network_mode: host
+    volumes:
+      - "grafana-storage:/var/lib/grafana"
+
+  prometheus:
+    image: prom/prometheus
+    network_mode: host
+    volumes:
+      - "./prometheus.yaml:/etc/prometheus/prometheus.yml"
+
+volumes:
+  grafana-storage: { }

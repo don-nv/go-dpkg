@@ -1,0 +1,69 @@
+# golangci-lint configuration file.
+# Read more at: https://github.com/golangci/golangci-lint#config-file
+run:
+  deadline: 15s
+  issues-exit-code: 103
+  tests: true
+  modules-download-mode: vendor
+  allow-parallel-runners: true
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - cyclop
+    - dupword
+    - durationcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exportloopref
+    - funlen
+    - gocognit
+    - gocritic
+    - godot
+    - gosec
+    - lll
+    - nilerr
+    - noctx
+    - nolintlint
+    - prealloc
+    - promlinter
+    - reassign
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - tenv
+    - testableexamples
+    - tparallel
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+linters-settings:
+  errcheck:
+    check-blank: true
+    check-type-assertions: true
+    disable-default-exclusions: true
+  govet:
+    # TODO: Enable & refactor
+    check-shadowing: false
+  asasalint:
+    ignore-test: false
+    use-builtin-exclusions: false
+  gosec:
+    exclude-generated: false
+    config:
+      global:
+        nosec: false
+        show-ignored: true
