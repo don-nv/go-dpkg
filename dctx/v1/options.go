@@ -4,7 +4,7 @@ import "context"
 
 type Option func(ctx context.Context) context.Context
 
-func OptionWith(ctx context.Context, options ...Option) context.Context {
+func With(ctx context.Context, options ...Option) context.Context {
 	for _, option := range options {
 		ctx = option(ctx)
 	}
@@ -12,22 +12,22 @@ func OptionWith(ctx context.Context, options ...Option) context.Context {
 	return ctx
 }
 
-func OptionWithNewGoID() Option {
-	return OptionWithGoID(NewID())
+func WithNewGoID() Option {
+	return WithGoID(newID())
 }
 
-func OptionWithGoID(id string) Option {
+func WithGoID(id string) Option {
 	return func(ctx context.Context) context.Context {
-		return WithGoID(ctx, id)
+		return AddGoID(ctx, id)
 	}
 }
 
-func OptionWithNewXRequestID() Option {
-	return OptionWithXRequestID(NewID())
+func WithNewXRequestID() Option {
+	return WithXRequestID(newID())
 }
 
-func OptionWithXRequestID(id string) Option {
+func WithXRequestID(id string) Option {
 	return func(ctx context.Context) context.Context {
-		return WithXRequestID(ctx, id)
+		return AddXRequestID(ctx, id)
 	}
 }
