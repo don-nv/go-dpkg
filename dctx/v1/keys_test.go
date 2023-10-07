@@ -2,7 +2,7 @@ package dctx_test
 
 import (
 	"context"
-	"github.com/don-nv/go-dpkg/dctx"
+	"github.com/don-nv/go-dpkg/dctx/v1"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
