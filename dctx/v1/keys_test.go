@@ -3,18 +3,19 @@ package dctx_test
 import (
 	"context"
 	"github.com/don-nv/go-dpkg/dctx/v1"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func Test_NewID_WithGoID_WithXRequestID_GoID_XRequestID(t *testing.T) {
+func Test_NewID_AddGoID_AddXRequestID_GoID_XRequestID(t *testing.T) {
 	var ctx = context.Background()
 
-	var goID = dctx.NewID()
-	ctx = dctx.WithGoID(ctx, goID)
+	var goID = uuid.NewString()
+	ctx = dctx.AddGoID(ctx, goID)
 
-	var xReqID = dctx.NewID()
-	ctx = dctx.WithXRequestID(ctx, xReqID)
+	var xReqID = uuid.NewString()
+	ctx = dctx.AddXRequestID(ctx, xReqID)
 
 	require.NotEmpty(t, goID)
 	require.NotEmpty(t, xReqID)

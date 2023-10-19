@@ -5,34 +5,38 @@ import (
 	"github.com/google/uuid"
 )
 
-func NewID() string {
+func newID() string {
 	return uuid.NewString()
 }
 
 type keyGoID struct{}
 
-func WithNewGoID(ctx context.Context) context.Context {
-	return WithGoID(ctx, NewID())
+func AddNewGoID(ctx context.Context) context.Context {
+	return AddGoID(ctx, newID())
 }
 
-func WithGoID(ctx context.Context, id string) context.Context {
+func AddGoID(ctx context.Context, id string) context.Context {
 	return context.WithValue(ctx, keyGoID{}, id)
 }
 
 func GoID(ctx context.Context) string {
-	return ctx.Value(keyGoID{}).(string)
+	var v, _ = ctx.Value(keyGoID{}).(string)
+
+	return v
 }
 
 type keyXRequestID struct{}
 
-func WithNewXRequestID(ctx context.Context) context.Context {
-	return WithXRequestID(ctx, NewID())
+func AddNewXRequestID(ctx context.Context) context.Context {
+	return AddXRequestID(ctx, newID())
 }
 
-func WithXRequestID(ctx context.Context, id string) context.Context {
+func AddXRequestID(ctx context.Context, id string) context.Context {
 	return context.WithValue(ctx, keyXRequestID{}, id)
 }
 
 func XRequestID(ctx context.Context) string {
-	return ctx.Value(keyXRequestID{}).(string)
+	var v, _ = ctx.Value(keyXRequestID{}).(string)
+
+	return v
 }
