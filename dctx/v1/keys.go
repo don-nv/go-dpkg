@@ -11,10 +11,12 @@ func newID() string {
 
 type keyGoID struct{}
 
+// AddNewGoID - creates `ctx` child, adds respective value and returns it.
 func AddNewGoID(ctx context.Context) context.Context {
 	return AddGoID(ctx, newID())
 }
 
+// AddGoID - creates `ctx` child, adds respective value and returns it.
 func AddGoID(ctx context.Context, id string) context.Context {
 	return context.WithValue(ctx, keyGoID{}, id)
 }
@@ -27,10 +29,12 @@ func GoID(ctx context.Context) string {
 
 type keyXRequestID struct{}
 
+// AddNewXRequestID - creates `ctx` child, adds respective value and returns it.
 func AddNewXRequestID(ctx context.Context) context.Context {
 	return AddXRequestID(ctx, newID())
 }
 
+// AddXRequestID - creates `ctx` child, adds respective value and returns it.
 func AddXRequestID(ctx context.Context, id string) context.Context {
 	return context.WithValue(ctx, keyXRequestID{}, id)
 }

@@ -6,7 +6,7 @@ import (
 
 /*
 New
-  - If resulting context has no go id, WithNewGoID() is used;
+  - If resulting context has no go id, WithNewGoID() gets applied;
 */
 func New(options ...Option) context.Context {
 	var ctx = With(context.Background(), options...)
