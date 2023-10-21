@@ -9,14 +9,14 @@ import (
 type Log struct {
 	writeLvl Level
 	logger   Logger
-	data     Data
+	data     Builder
 }
 
 func newLog(log Logger, writeLvl Level) Log {
 	return Log{
 		writeLvl: writeLvl,
 		logger:   log,
-		data:     newData(log),
+		data:     newBuilder(log),
 	}
 }
 
@@ -65,7 +65,7 @@ func (l Log) constructName() string {
 	// TODO? Grow may be replaced with bytes sync pools.
 
 	var builder = strings.Builder{}
-	builder.Grow(len(l.logger.names) * nameMaxBytes)
+	builder.Grow(len(l.logger.names) * nameExpectedMaxBytes)
 
 	for i, name := range l.logger.names {
 		builder.WriteString(name)
@@ -78,21 +78,21 @@ func (l Log) constructName() string {
 	return builder.String()
 }
 
-// Scope - is the same as Data.Scope().
+// Scope - is the same as Builder.Scope().
 func (l Log) Scope(ctx context.Context) Log {
 	l.data = l.data.Scope(ctx)
 
 	return l
 }
 
-// Name - is the same as Data.Name().
+// Name - is the same as Builder.Name().
 func (l Log) Name(names ...string) Log {
 	l.data = l.data.Name(names...)
 
 	return l
 }
 
-// Any - is the same as Data.Any().
+// Any - is the same as Builder.Any().
 func (l Log) Any(key string, value interface{}) Log {
 	l.data = l.data.Any(key, value)
 

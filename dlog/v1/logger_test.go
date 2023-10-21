@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-var ctx = dctx.New(dctx.WithNewXRequestID())
+var ctx = dctx.New(dctx.OptionNewXRequestID())
 
 func TestLogger_ObjectMarshallerJSON(t *testing.T) {
 	var consumer = NewConsumerLogger()
@@ -68,8 +68,10 @@ func NewConsumerLogger() ConsumerLogger {
 
 func (c ConsumerLogger) LogBench(ctx context.Context) (err error) {
 	var log = c.log.With().Name("logging_bench").Scope(ctx).Build()
-	defer log.WriteI("running...").Write("...done")
 	defer log.CatchE(&err)
+
+	var info = log.I()
+	defer info.Write("running...").Write("...done")
 
 	log = log.With().Bytes("body", TestDataBytes).Build()
 
@@ -78,8 +80,10 @@ func (c ConsumerLogger) LogBench(ctx context.Context) (err error) {
 
 func (c ConsumerLogger) LogObjectMarshallerJSON(ctx context.Context) (err error) {
 	var log = c.log.With().Name("logging_object_marshaller_json").Scope(ctx).Build()
-	defer log.WriteI("running...").Write("...done")
 	defer log.CatchE(&err)
+
+	var info = log.I()
+	defer info.Write("running...").Write("...done")
 
 	var object = NewTestDataObjectJSON()
 	log = log.With().ObjectMarshallerJSON("object_json", object).Build()

@@ -6,13 +6,13 @@ import (
 
 /*
 New
-  - If resulting context has no go id, WithNewGoID() gets applied;
+  - If resulting context has no go id, OptionNewGoID() gets applied;
 */
 func New(options ...Option) context.Context {
-	var ctx = With(context.Background(), options...)
+	var ctx = WithOptions(context.Background(), options...)
 
 	if GoID(ctx) == "" {
-		ctx = WithNewGoID()(ctx)
+		ctx = OptionNewGoID()(ctx)
 	}
 
 	return ctx

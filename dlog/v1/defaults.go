@@ -13,19 +13,19 @@ const (
 	TimeDefaultLayout = "2006-01-02T15:04:05.000000000Z07:00"
 
 	/*
-		nameMaxBytes - is used as an empiric value to preallocate enough space while building a single Log name from
-		names. See Log.constructName() method.
+		nameExpectedMaxBytes - is used as an empiric value to preallocate enough space while building a single Log name
+		from names. See Log.constructName() method.
 
 		Number is considered to be more or less accurate and is based on the following single name:
 			- `handling_register_message_request`;
-		- which is 33 bytes length. Give it 20% additional capacity and round up - this is the resulting value;
+		It has length of 33 bytes. Give it 20% additional capacity and round up - this is the resulting value;
 
 		TODO? This may be variable calculated over time for entire Logger or for each individual Log.
 	*/
-	nameMaxBytes = 40
+	nameExpectedMaxBytes = 40
 )
 
-// ReadScopeFn - is used at Log.Scope() method.
+// ReadScopeFn - is used at Builder.Scope() or Log.Scope() method.
 type ReadScopeFn func(ctx context.Context, log Logger) Logger
 
 /*
@@ -33,7 +33,7 @@ ReadScopeDefault - default ReadScopeFn function. Uses dctx package to populate L
   - Goroutine id;
   - X request id;
 
-- both values are expected to be set to `ctx` via dctx package. If some of them are missing, then the respective empty
+Both values are expected to be set to `ctx` via dctx package. If some of them are missing, then the respective empty
 values get omitted.
 */
 func ReadScopeDefault(ctx context.Context, log Logger) Logger {
