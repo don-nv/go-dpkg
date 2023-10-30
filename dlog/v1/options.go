@@ -9,7 +9,7 @@ type Option func(l *Logger)
 // WithReadScopeDisabled - disables Log.Scope() and Data.Scope() methods.
 func WithReadScopeDisabled() Option {
 	return func(l *Logger) {
-		l.readScope = func(_ context.Context, l Logger) Logger { return l }
+		l.readScope = func(_ context.Context, l Logger) Data { return l.With() }
 	}
 }
 

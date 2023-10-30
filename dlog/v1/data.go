@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/don-nv/go-dpkg/dctx/v1"
 	"github.com/rs/zerolog"
 	"time"
 )
@@ -34,22 +33,7 @@ func (d Data) Build() Logger {
 
 // Scope - reads context key-value pairs and populates data with it.
 func (d Data) Scope(ctx context.Context) Data {
-	d.logger = d.logger.readScope(ctx, d.logger)
-
-	//d.logger.D().Write(dctx.GoID(ctx) + " foo")
-	//d.Build().D().Write(dctx.GoID(ctx) + " foo")
-
-	id := dctx.GoID(ctx)
-	if id != "" {
-		d = d.String("go_id", id)
-	}
-
-	id = dctx.XRequestID(ctx)
-	if id != "" {
-		d = d.String("x_req_id", id)
-	}
-
-	return d
+	return d.logger.readScope(ctx, d.logger)
 }
 
 // Name - adds `names` - a separate field of each log.
