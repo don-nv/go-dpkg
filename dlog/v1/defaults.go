@@ -20,9 +20,9 @@ const (
 			- `handling_register_message_request`;
 		It has length of 33 bytes. Give it 20% additional capacity and round up - this is the resulting value;
 
-		TODO? This may be variable calculated over time for entire Logger or for each individual Log.
 	*/
 	nameExpectedMaxBytes = 40
+	// TODO? This may be variable calculated over time for entire Logger or for each individual Log.
 )
 
 // ReadScopeFn - is used at Data.Scope() or Log.Scope() method.

@@ -23,7 +23,7 @@ New
   - LevelDebug message logged at Logger.CatchED() method is CatchEDDefaultMessage by default;
   - ReadScopeDefault is used by default;
 */
-func New(options ...Option) Logger {
+func New(options ...OptionLogger) Logger {
 	log := Logger{
 		levels:     LevelAll,
 		readScope:  ReadScopeDefault,

@@ -4,24 +4,24 @@ import (
 	"context"
 )
 
-type Option func(l *Logger)
+type OptionLogger func(l *Logger)
 
-// WithReadScopeDisabled - disables Log.Scope() and Data.Scope() methods.
-func WithReadScopeDisabled() Option {
+// OptionLoggerWithReadScopeDisabled - disables Log.Scope() and Data.Scope() methods.
+func OptionLoggerWithReadScopeDisabled() OptionLogger {
 	return func(l *Logger) {
 		l.readScope = func(_ context.Context, data Data) Data { return data }
 	}
 }
 
-// WithReadScope - adds custom ReadScopeFn replacing default one for Log.Scope() and Data.Scope() methods.
-func WithReadScope(f ReadScopeFn) Option {
+// OptionLoggerWithReadScope - adds custom ReadScopeFn replacing default one for Log.Scope() and Data.Scope() methods.
+func OptionLoggerWithReadScope(f ReadScopeFn) OptionLogger {
 	return func(l *Logger) {
 		l.readScope = f
 	}
 }
 
-// WithLevel - sets Logger Level to `lvl`.
-func WithLevel(lvl Level) Option {
+// OptionLoggerWithLevel - sets Logger Level to `lvl`.
+func OptionLoggerWithLevel(lvl Level) OptionLogger {
 	return func(l *Logger) {
 		l.levels = lvl
 	}

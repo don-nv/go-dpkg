@@ -15,7 +15,7 @@ func TestCommon(t *testing.T) {
 	Log(dlog.New())
 
 	t.Log("ReadScope(): disabled")
-	Log(dlog.New(dlog.WithReadScopeDisabled()))
+	Log(dlog.New(dlog.OptionLoggerWithReadScopeDisabled()))
 }
 
 func Log(l dlog.Logger) {
