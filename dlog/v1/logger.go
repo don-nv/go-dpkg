@@ -11,10 +11,10 @@ Logger - writes logs. This is a generalized implementation having well-known gen
 */
 type Logger struct {
 	zero       zerolog.Logger
-	names      []string
 	catchEDMsg string
 	levels     Level
-	readCtx    ReadScopeFn
+	readScope  ReadScopeFn
+	names      [][]byte
 }
 
 /*
@@ -26,7 +26,7 @@ New
 func New(options ...Option) Logger {
 	log := Logger{
 		levels:     LevelAll,
-		readCtx:    ReadScopeDefault,
+		readScope:  ReadScopeDefault,
 		catchEDMsg: CatchEDDefaultMessage,
 	}
 
@@ -38,8 +38,8 @@ func New(options ...Option) Logger {
 	zerolog.LevelWarnValue = LevelWarn.String()
 	zerolog.LevelInfoValue = LevelInfo.String()
 	zerolog.LevelDebugValue = LevelDebug.String()
-	zerolog.TimestampFieldName = "time"
-	zerolog.LevelFieldName = "level"
+	zerolog.TimestampFieldName = "ts"
+	zerolog.LevelFieldName = "lvl"
 	zerolog.MessageFieldName = "msg"
 	zerolog.TimeFieldFormat = TimeDefaultLayout
 
@@ -69,8 +69,8 @@ func (l Logger) newLog(lvl Level) Log {
 	return newLog(l, lvl)
 }
 
-// With - returns Logger Builder to be populated. Call Data.Build() to return a Logger with new data added.
-func (l Logger) With() Builder { return newBuilder(l) }
+// With - returns Logger Data to be populated. Call Data.Build() to return a Logger with new data added.
+func (l Logger) With() Data { return newData(l) }
 
 /*
 CatchE - catches an `err` and if `*err` != nil, writes Log at E() method. If `notErrs` are passed, then `*err` gets
@@ -128,4 +128,22 @@ func (l Logger) catchED(isDebugCatch bool, err *error, notErrs ...error) {
 	if isDebugCatch {
 		l.D().Write(l.catchEDMsg)
 	}
+}
+
+func (l Logger) constructName() string {
+	if len(l.names) < 1 {
+		return ""
+	}
+
+	// TODO? Cap may be replaced with bytes sync pools.
+	var name = make([]byte, 0, len(l.names)*nameExpectedMaxBytes)
+	for i, n := range l.names {
+		name = append(name, n...)
+
+		if i != len(l.names)-1 {
+			name = append(name, '.')
+		}
+	}
+
+	return string(name)
 }

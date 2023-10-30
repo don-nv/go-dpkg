@@ -7,6 +7,7 @@ import (
 	"github.com/don-nv/go-dpkg/dctx/v1"
 	"github.com/don-nv/go-dpkg/dlog/v1"
 	"github.com/rs/zerolog"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"os"
 	"testing"
@@ -14,10 +15,30 @@ import (
 
 var ctx = dctx.New(dctx.OptionNewXRequestID())
 
+func TestName(t *testing.T) {
+	l := dlog.New()
+
+	l = l.With().Name("a", "b").Build()
+	l.I().Write("msg")
+
+	l = l.With().Name("c").Build()
+	l.I().Write("msg")
+
+	l.I().Name("d", "e").Write("msg")
+	l.I().Name("d", "e").Any("key", "value").Write("msg")
+
+	l = l.With().Any("key", "value").Build()
+
+	l.I().Scope(ctx).Write("msg")
+	l = l.With().Scope(ctx).Build()
+	l.I().Write("msg")
+}
+
 func TestLogger_ObjectMarshallerJSON(t *testing.T) {
 	var consumer = NewConsumerLogger()
 
-	_ = consumer.LogObjectMarshallerJSON(ctx)
+	err := consumer.LogObjectMarshallerJSON(ctx)
+	require.Error(t, err)
 }
 
 func BenchmarkLogger_Consumer(b *testing.B) {
@@ -27,7 +48,7 @@ func BenchmarkLogger_Consumer(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = consumer.LogBench(ctx)
+			_ = consumer.LogBench(ctx) //nolint:errcheck
 		}
 	})
 }
@@ -39,7 +60,7 @@ func BenchmarkZerolog_Consumer(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = consumer.LogBench(ctx)
+			_ = consumer.LogBench(ctx) //nolint:errcheck
 		}
 	})
 }
@@ -51,7 +72,7 @@ func BenchmarkZap_Consumer(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = consumer.LogBench(ctx)
+			_ = consumer.LogBench(ctx) //nolint:errcheck
 		}
 	})
 }
@@ -66,7 +87,7 @@ func NewConsumerLogger() ConsumerLogger {
 	}
 }
 
-func (c ConsumerLogger) LogBench(ctx context.Context) (err error) {
+func (c *ConsumerLogger) LogBench(ctx context.Context) (err error) {
 	var log = c.log.With().Name("logging_bench").Scope(ctx).Build()
 	defer log.CatchE(&err)
 
@@ -75,7 +96,7 @@ func (c ConsumerLogger) LogBench(ctx context.Context) (err error) {
 
 	log = log.With().Bytes("body", TestDataBytes).Build()
 
-	return TestDataError
+	return ErrTest
 }
 
 func (c ConsumerLogger) LogObjectMarshallerJSON(ctx context.Context) (err error) {
@@ -88,7 +109,7 @@ func (c ConsumerLogger) LogObjectMarshallerJSON(ctx context.Context) (err error)
 	var object = NewTestDataObjectJSON()
 	log = log.With().ObjectMarshallerJSON("object_json", object).Build()
 
-	return TestDataError
+	return ErrTest
 }
 
 type ConsumerZerolog struct {
@@ -125,7 +146,7 @@ func (c ConsumerZerolog) LogBench(ctx context.Context) (err error) {
 
 	log = log.With().Bytes("body", TestDataBytes).Logger()
 
-	return TestDataError
+	return ErrTest
 }
 
 type ConsumerZap struct {
@@ -171,7 +192,7 @@ func (c ConsumerZap) LogBench(ctx context.Context) (err error) {
 
 	log = log.With(zap.ByteString("body", TestDataBytes))
 
-	return TestDataError
+	return ErrTest
 }
 
 var (
@@ -182,7 +203,8 @@ var (
 		"\"A meta-markup language, used to create markup languages such as DocBook.\",\"GlossSeeAlso\": " +
 		"[\"GML\",\"XML\"]},\"GlossSee\": \"markup\"}}}}}",
 	)
-	TestDataError = errors.New("" +
+	//nolint:dupword
+	ErrTest = errors.New("" +
 		"error error error error error error error error error " +
 		"error error error error error error error error error " +
 		"error error error error error error error error error " +

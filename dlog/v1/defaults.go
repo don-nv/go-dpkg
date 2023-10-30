@@ -9,7 +9,7 @@ const (
 	// CatchEDDefaultMessage - is a default message used to be logged at LevelDebug for Logger.CatchED() method.
 	CatchEDDefaultMessage = "OK"
 
-	// TimeDefaultLayout - is the same as time.RFC3339Nano, but preserves trailing zeros.
+	// TimeDefaultLayout - is the same as time.RFC3339Nano, but preserves trailing nanoseconds zeros.
 	TimeDefaultLayout = "2006-01-02T15:04:05.000000000Z07:00"
 
 	/*
@@ -25,7 +25,7 @@ const (
 	nameExpectedMaxBytes = 40
 )
 
-// ReadScopeFn - is used at Builder.Scope() or Log.Scope() method.
+// ReadScopeFn - is used at Data.Scope() or Log.Scope() method.
 type ReadScopeFn func(ctx context.Context, log Logger) Logger
 
 /*
@@ -50,13 +50,4 @@ func ReadScopeDefault(ctx context.Context, log Logger) Logger {
 	}
 
 	return data.Build()
-}
-
-// errStr - returns error message if not nil, otherwise - "nil".
-func errStr(err error) string {
-	if err != nil {
-		return err.Error()
-	}
-
-	return "nil"
 }

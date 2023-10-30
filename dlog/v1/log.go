@@ -2,44 +2,44 @@ package dlog
 
 import (
 	"context"
+	"github.com/don-nv/go-dpkg/dctx/v1"
 	"github.com/rs/zerolog"
-	"strings"
 )
 
 type Log struct {
 	writeLvl Level
-	logger   Logger
-	data     Builder
+	data     Data
 }
 
 func newLog(log Logger, writeLvl Level) Log {
 	return Log{
 		writeLvl: writeLvl,
-		logger:   log,
-		data:     newBuilder(log),
+		data:     newData(log),
 	}
 }
 
 func (l Log) Write(msg string) Log {
-	if l.logger.zero.GetLevel() == zerolog.Disabled {
-		return l
-	}
+	var (
+		logger = l.data.Build()
+		event  = l.newEventFactoryForLevel()(logger.zero)
+	)
 
+	name := logger.constructName()
+	if name != "" {
+		event.Str("name", name)
+	}
+	event.Timestamp().Msg(msg)
+
+	return l
+}
+
+func (l Log) newEventFactoryForLevel() func(l zerolog.Logger) *zerolog.Event {
 	newEvent, ok := eventFactoryByLvl[l.writeLvl]
 	if !ok {
 		newEvent = eventFactoryByLvl[LevelError]
 	}
 
-	var event = newEvent(l.logger.zero)
-
-	name := l.constructName()
-	if name != "" {
-		event.Str("name", name)
-	}
-
-	event.Timestamp().Msg(msg)
-
-	return l
+	return newEvent
 }
 
 var eventFactoryByLvl = map[Level]func(l zerolog.Logger) *zerolog.Event{
@@ -57,42 +57,23 @@ var eventFactoryByLvl = map[Level]func(l zerolog.Logger) *zerolog.Event{
 	},
 }
 
-func (l Log) constructName() string {
-	if len(l.logger.names) < 1 {
-		return ""
-	}
-
-	// TODO? Grow may be replaced with bytes sync pools.
-
-	var builder = strings.Builder{}
-	builder.Grow(len(l.logger.names) * nameExpectedMaxBytes)
-
-	for i, name := range l.logger.names {
-		builder.WriteString(name)
-
-		if i != len(l.logger.names)-1 {
-			builder.WriteByte('.')
-		}
-	}
-
-	return builder.String()
-}
-
-// Scope - is the same as Builder.Scope().
+// Scope - is the same as Data.Scope().
 func (l Log) Scope(ctx context.Context) Log {
 	l.data = l.data.Scope(ctx)
+
+	l.data.Build().W().Write(dctx.GoID(ctx))
 
 	return l
 }
 
-// Name - is the same as Builder.Name().
+// Name - is the same as Data.Name().
 func (l Log) Name(names ...string) Log {
 	l.data = l.data.Name(names...)
 
 	return l
 }
 
-// Any - is the same as Builder.Any().
+// Any - is the same as Data.Any().
 func (l Log) Any(key string, value interface{}) Log {
 	l.data = l.data.Any(key, value)
 
