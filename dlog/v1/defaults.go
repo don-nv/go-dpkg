@@ -26,7 +26,7 @@ const (
 )
 
 // ReadScopeFn - is used at Data.Scope() or Log.Scope() method.
-type ReadScopeFn func(ctx context.Context, log Logger) Data
+type ReadScopeFn func(ctx context.Context, data Data) Data
 
 /*
 ReadScopeDefault - default ReadScopeFn function. Uses dctx package to populate Logger with:
@@ -36,9 +36,7 @@ ReadScopeDefault - default ReadScopeFn function. Uses dctx package to populate L
 Both values are expected to be set to `ctx` via dctx package. If some of them are missing, then the respective empty
 values get omitted.
 */
-func ReadScopeDefault(ctx context.Context, log Logger) Data {
-	var data = log.With()
-
+func ReadScopeDefault(ctx context.Context, data Data) Data {
 	id := dctx.GoID(ctx)
 	if id != "" {
 		data = data.String("go_id", id)

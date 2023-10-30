@@ -2,7 +2,6 @@ package dlog
 
 import (
 	"context"
-	"github.com/don-nv/go-dpkg/dctx/v1"
 	"github.com/rs/zerolog"
 )
 
@@ -60,8 +59,6 @@ var eventFactoryByLvl = map[Level]func(l zerolog.Logger) *zerolog.Event{
 // Scope - is the same as Data.Scope().
 func (l Log) Scope(ctx context.Context) Log {
 	l.data = l.data.Scope(ctx)
-
-	l.data.Build().W().Write(dctx.GoID(ctx))
 
 	return l
 }

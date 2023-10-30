@@ -33,7 +33,7 @@ func (d Data) Build() Logger {
 
 // Scope - reads context key-value pairs and populates data with it.
 func (d Data) Scope(ctx context.Context) Data {
-	return d.logger.readScope(ctx, d.logger)
+	return d.logger.readScope(ctx, d)
 }
 
 // Name - adds `names` - a separate field of each log.

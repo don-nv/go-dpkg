@@ -16,8 +16,13 @@ import (
 var ctx = dctx.New(dctx.OptionNewXRequestID())
 
 func TestName(t *testing.T) {
-	l := dlog.New()
+	t.Log("ReadScope() enabled")
+	Log(dlog.New())
+	t.Log("ReadScope() disabled")
+	Log(dlog.New(dlog.WithReadScopeDisabled()))
+}
 
+func Log(l dlog.Logger) {
 	l = l.With().Name("a", "b").Build()
 	l.I().Write("msg")
 
@@ -27,7 +32,7 @@ func TestName(t *testing.T) {
 	l.I().Name("d", "e").Write("msg")
 	l.I().Name("d", "e").Any("key", "value").Write("msg")
 
-	l = l.With().Any("key", "value").Build()
+	l = l.With().Name("d", "e").Any("key", "value").Build()
 
 	l.I().Scope(ctx).Write("msg")
 	l = l.With().Scope(ctx).Build()
