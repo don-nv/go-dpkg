@@ -1,6 +1,7 @@
 package dlog_test
 
 import (
+	"errors"
 	"github.com/don-nv/go-dpkg/dctx/v1"
 	"github.com/don-nv/go-dpkg/dlog/v1"
 	"github.com/stretchr/testify/require"
@@ -9,7 +10,7 @@ import (
 
 var ctx = dctx.New(dctx.OptionNewXRequestID())
 
-func TestName(t *testing.T) {
+func TestCommon(t *testing.T) {
 	t.Log("ReadScope(): enabled")
 	Log(dlog.New())
 
@@ -36,6 +37,8 @@ func Log(l dlog.Logger) {
 	l.E().Scope(ctx).Write("msg")
 	l = l.With().Scope(ctx).Build()
 	l.W().Write("msg")
+
+	err = errors.New("error")
 }
 
 func TestLogger_ObjectMarshallerJSON(t *testing.T) {

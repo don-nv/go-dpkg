@@ -1,10 +1,11 @@
-package dlog
+package dlog_test
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"github.com/don-nv/go-dpkg/dctx/v1"
+	"github.com/don-nv/go-dpkg/dlog/v1"
 	"github.com/rs/zerolog"
 	"go.uber.org/zap"
 	"os"
@@ -64,9 +65,9 @@ func (c *ConsumerLogger) LogBench(ctx context.Context) (err error) {
 	var info = log.I()
 	defer info.Write("running...").Write("...done")
 
-	log = log.With().Bytes("body", DataBytesJSON).Build()
+	log = log.With().Bytes("body", BytesJSON).Build()
 
-	return Err237Chars
+	return Err
 }
 
 func (c ConsumerLogger) LogObjectMarshallerJSON(ctx context.Context) (err error) {
@@ -79,7 +80,7 @@ func (c ConsumerLogger) LogObjectMarshallerJSON(ctx context.Context) (err error)
 	var object = NewDataObjectJSON()
 	log = log.With().ObjectMarshallerJSON("object_json", object).Build()
 
-	return Err237Chars
+	return Err
 }
 
 type ConsumerZerolog struct {
@@ -114,9 +115,9 @@ func (c ConsumerZerolog) LogBench(ctx context.Context) (err error) {
 		}
 	}()
 
-	log = log.With().Bytes("body", DataBytesJSON).Logger()
+	log = log.With().Bytes("body", BytesJSON).Logger()
 
-	return Err237Chars
+	return Err
 }
 
 type ConsumerZap struct {
@@ -160,20 +161,20 @@ func (c ConsumerZap) LogBench(ctx context.Context) (err error) {
 		}
 	}()
 
-	log = log.With(zap.ByteString("body", DataBytesJSON))
+	log = log.With(zap.ByteString("body", BytesJSON))
 
-	return Err237Chars
+	return Err
 }
 
 var (
-	DataBytesJSON = []byte("" +
+	BytesJSON = []byte("" +
 		"{\"glossary\": {\"title\": \"example glossary\",\"GlossDiv\": {\"title\": \"S\",\"GlossList\": " +
 		"{\"GlossEntry\": {\"ID\": \"SGML\",\"SortAs\": \"SGML\",\"GlossTerm\": \"Standard Generalized " +
 		"Markup Language\",\"Acronym\": \"SGML\",\"Abbrev\": \"ISO 8879:1986\",\"GlossDef\": {\"para\": " +
 		"\"A meta-markup language, used to create markup languages such as DocBook.\",\"GlossSeeAlso\": " +
 		"[\"GML\",\"XML\"]},\"GlossSee\": \"markup\"}}}}}",
 	)
-	Err237Chars = errors.New("" +
+	Err = errors.New("" +
 		"purus viverra accumsan in nisl nisi scelerisque eu ultrices vitae auctor eu augue ut lectus arcu bibendum at " +
 		"varius vel pharetra vel turpis nunc eget lorem dolor sed viverra ipsum nunc aliquet bibendum enim facilisis " +
 		"gravida neque convallis a cras",

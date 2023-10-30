@@ -62,6 +62,7 @@ func (l Logger) D() Log { return l.newLog(LevelDebug) }
 
 // newLog - returns new Log. If `lvl` is disabled, the returned Log is no-op.
 func (l Logger) newLog(lvl Level) Log {
+	// Preconfigure zerolog. If disabled, does nothing.
 	if !l.levels.Enabled(lvl) {
 		l.zero = l.zero.Level(zerolog.Disabled)
 	}
@@ -70,7 +71,9 @@ func (l Logger) newLog(lvl Level) Log {
 }
 
 // With - returns Logger Data to be populated. Call Data.Build() to return a Logger with new data added.
-func (l Logger) With() Data { return newData(l) }
+func (l Logger) With() Data {
+	return newData(l)
+}
 
 /*
 CatchE - catches an `err` and if `*err` != nil, writes Log at E() method. If `notErrs` are passed, then `*err` gets
@@ -84,13 +87,16 @@ Example:
 		var err error
 		defer log.CatchE(&err)
 		...
-		log = log.WithOptions().Any("k", "v").Build()
+		log = log.With().Any("k", "v").Build()
+		err = errors.New("an error")
 		...
-		err = errors.New("an error occurred")
-		// [E] an error occurred {"k":"v"}
+		// [E] an error {"k":"v"}
 	}
 */
-func (l *Logger) CatchE(err *error, notErrs ...error) { l.catchED(false, err, notErrs...) }
+func (l *Logger) CatchE(err *error, notErrs ...error) {
+	// CatchE, CatchED methods must point to *Logger. Otherwise data added after `defer log.CatchED()` get lost.
+	l.catchED(false, err, notErrs...)
+}
 
 /*
 CatchED - is the same as CatchE() method, but writes Log at D() method with predefined message if `*err` == nil or
@@ -102,12 +108,15 @@ Example:
 		var err error
 		defer log.CatchED(&err)
 		...
-		log = log.WithOptions().Any("k", "v").Build()
+		log = log.With().Any("k", "v").Build()
 		...
 		// [D] OK {"k":"v"}
 	}
 */
-func (l *Logger) CatchED(err *error, notErrs ...error) { l.catchED(true, err, notErrs...) }
+func (l *Logger) CatchED(err *error, notErrs ...error) {
+	// CatchE, CatchED methods must point to *Logger. Otherwise data added after `defer log.CatchED()` get lost.
+	l.catchED(true, err, notErrs...)
+}
 
 func (l Logger) catchED(isDebugCatch bool, err *error, notErrs ...error) {
 	if *err == nil {

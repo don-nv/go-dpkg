@@ -146,6 +146,9 @@ func (d Data) Any(key string, value interface{}) Data {
 	case json.Marshaler:
 		return d.ObjectMarshallerJSON(key, v)
 
+	case fmt.Stringer:
+		return d.Stringer(key, v)
+
 	default:
 		d.zctx = d.zctx.Interface(key, v)
 
@@ -360,12 +363,18 @@ func (d Data) Durations(key string, value []time.Duration) Data {
 func (d Data) ObjectMarshallerJSON(key string, value json.Marshaler) Data {
 	data, err := value.MarshalJSON()
 	if err != nil {
-		d.zctx = d.zctx.Err(fmt.Errorf(key+" marshalling value as json: %w", err))
+		d.zctx = d.zctx.AnErr(key, fmt.Errorf("marshalling value as json: %w", err))
 
 		return d
 	}
 
 	d.zctx = d.zctx.Bytes(key, data)
+
+	return d
+}
+
+func (d Data) Stringer(key string, value fmt.Stringer) Data {
+	d.zctx = d.zctx.Stringer(key, value)
 
 	return d
 }
