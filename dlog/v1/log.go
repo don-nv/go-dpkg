@@ -3,43 +3,42 @@ package dlog
 import (
 	"context"
 	"github.com/rs/zerolog"
-	"strings"
 )
 
 type Log struct {
 	writeLvl Level
-	logger   Logger
 	data     Data
 }
 
 func newLog(log Logger, writeLvl Level) Log {
 	return Log{
 		writeLvl: writeLvl,
-		logger:   log,
 		data:     newData(log),
 	}
 }
 
 func (l Log) Write(msg string) Log {
-	if l.logger.zero.GetLevel() == zerolog.Disabled {
-		return l
-	}
+	var (
+		logger = l.data.Build()
+		event  = l.newEventFactoryForLevel()(logger.zero)
+	)
 
+	name := logger.constructName()
+	if name != "" {
+		event.Str("name", name)
+	}
+	event.Timestamp().Msg(msg)
+
+	return l
+}
+
+func (l Log) newEventFactoryForLevel() func(l zerolog.Logger) *zerolog.Event {
 	newEvent, ok := eventFactoryByLvl[l.writeLvl]
 	if !ok {
 		newEvent = eventFactoryByLvl[LevelError]
 	}
 
-	var event = newEvent(l.logger.zero)
-
-	name := l.constructName()
-	if name != "" {
-		event.Str("name", name)
-	}
-
-	event.Timestamp().Msg(msg)
-
-	return l
+	return newEvent
 }
 
 var eventFactoryByLvl = map[Level]func(l zerolog.Logger) *zerolog.Event{
@@ -55,27 +54,6 @@ var eventFactoryByLvl = map[Level]func(l zerolog.Logger) *zerolog.Event{
 	LevelDebug: func(l zerolog.Logger) *zerolog.Event {
 		return l.Debug()
 	},
-}
-
-func (l Log) constructName() string {
-	if len(l.logger.names) < 1 {
-		return ""
-	}
-
-	// TODO? Grow may be replaced with bytes sync pools.
-
-	var builder = strings.Builder{}
-	builder.Grow(len(l.logger.names) * nameMaxBytes)
-
-	for i, name := range l.logger.names {
-		builder.WriteString(name)
-
-		if i != len(l.logger.names)-1 {
-			builder.WriteByte('.')
-		}
-	}
-
-	return builder.String()
 }
 
 // Scope - is the same as Data.Scope().

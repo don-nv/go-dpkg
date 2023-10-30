@@ -4,7 +4,8 @@ import "context"
 
 type Option func(ctx context.Context) context.Context
 
-func With(ctx context.Context, options ...Option) context.Context {
+// WithOptions - applies `options` if any to the `ctx` and returns the latest child, else returns unmodified `ctx`.
+func WithOptions(ctx context.Context, options ...Option) context.Context {
 	for _, option := range options {
 		ctx = option(ctx)
 	}
@@ -12,22 +13,26 @@ func With(ctx context.Context, options ...Option) context.Context {
 	return ctx
 }
 
-func WithNewGoID() Option {
-	return WithGoID(newID())
+// OptionNewGoID - is the same as WithNewGoID, but an Option.
+func OptionNewGoID() Option {
+	return OptionGoID(newID())
 }
 
-func WithGoID(id string) Option {
+// OptionGoID - is the same as WithGoID, but an Option.
+func OptionGoID(id string) Option {
 	return func(ctx context.Context) context.Context {
-		return AddGoID(ctx, id)
+		return WithGoID(ctx, id)
 	}
 }
 
-func WithNewXRequestID() Option {
-	return WithXRequestID(newID())
+// OptionNewXRequestID - is the same as WithNewXRequestID, but an Option.
+func OptionNewXRequestID() Option {
+	return OptionXRequestID(newID())
 }
 
-func WithXRequestID(id string) Option {
+// OptionXRequestID - is the same as WithXRequestID, but an Option.
+func OptionXRequestID(id string) Option {
 	return func(ctx context.Context) context.Context {
-		return AddXRequestID(ctx, id)
+		return WithXRequestID(ctx, id)
 	}
 }

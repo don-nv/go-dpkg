@@ -8,14 +8,14 @@ import (
 	"testing"
 )
 
-func Test_NewID_AddGoID_AddXRequestID_GoID_XRequestID(t *testing.T) {
+func Test_NewID_WithGoID_WithXRequestID_GoID_XRequestID(t *testing.T) {
 	var ctx = context.Background()
 
 	var goID = uuid.NewString()
-	ctx = dctx.AddGoID(ctx, goID)
+	ctx = dctx.WithGoID(ctx, goID)
 
 	var xReqID = uuid.NewString()
-	ctx = dctx.AddXRequestID(ctx, xReqID)
+	ctx = dctx.WithXRequestID(ctx, xReqID)
 
 	require.NotEmpty(t, goID)
 	require.NotEmpty(t, xReqID)

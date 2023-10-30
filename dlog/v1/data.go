@@ -9,40 +9,48 @@ import (
 )
 
 type Data struct {
-	ctx zerolog.Context
-	log Logger
+	zctx   zerolog.Context
+	logger Logger
 }
 
-func newData(log Logger) Data {
+func newData(logger Logger) Data {
 	return Data{
-		log: log,
+		logger: logger,
 		/*
 			TODO?
 				This may be replaced with custom initialization. Under the hood, zerolog makes []byte escaping to heap
 				(spill). Custom initialization may use sync pool of []byte.
 		*/
-		ctx: log.zero.With(),
+		zctx: logger.zero.With(),
 	}
 }
 
 func (d Data) Build() Logger {
-	d.log.zero = d.ctx.Logger()
+	d.logger.zero = d.zctx.Logger()
 
-	return d.log
+	return d.logger
 }
 
 // Scope - reads context key-value pairs and populates data with it.
 func (d Data) Scope(ctx context.Context) Data {
-	d.log = d.log.readCtx(ctx, d.log)
-
-	return d
+	return d.logger.readScope(ctx, d)
 }
 
 // Name - adds `names` - a separate field of each log.
 func (d Data) Name(names ...string) Data {
-	for _, name := range names {
-		d.log.names = append(d.log.names, name)
+	if len(names) < 1 {
+		return d
 	}
+
+	var (
+		oldNames = d.logger.names
+		allNames = make([][]byte, 0, len(oldNames)+len(names))
+	)
+	allNames = append(allNames, oldNames...)
+	for _, name := range names {
+		allNames = append(allNames, []byte(name))
+	}
+	d.logger.names = allNames
 
 	return d
 }
@@ -51,6 +59,7 @@ func (d Data) Name(names ...string) Data {
 Any - this should be used if a `value` can be of several types depending on a circumstances this method was called.
 Otherwise, it's better to use type specific methods, because they don't have a performance drawback this method has.
 */
+//nolint:funlen,cyclop
 func (d Data) Any(key string, value interface{}) Data {
 	switch v := value.(type) {
 	case string:
@@ -137,213 +146,216 @@ func (d Data) Any(key string, value interface{}) Data {
 	case json.Marshaler:
 		return d.ObjectMarshallerJSON(key, v)
 
+	case fmt.Stringer:
+		return d.Stringer(key, v)
+
 	default:
-		d.ctx = d.ctx.Interface(key, v)
+		d.zctx = d.zctx.Interface(key, v)
 
 		return d
 	}
 }
 
 func (d Data) String(key string, value string) Data {
-	d.ctx = d.ctx.Str(key, value)
+	d.zctx = d.zctx.Str(key, value)
 
 	return d
 }
 
 func (d Data) Strings(key string, value []string) Data {
-	d.ctx = d.ctx.Strs(key, value)
+	d.zctx = d.zctx.Strs(key, value)
 
 	return d
 }
 
 func (d Data) Error(key string, value error) Data {
-	d.ctx = d.ctx.AnErr(key, value)
+	d.zctx = d.zctx.AnErr(key, value)
 
 	return d
 }
 
 func (d Data) Errors(key string, value []error) Data {
-	d.ctx = d.ctx.Errs(key, value)
+	d.zctx = d.zctx.Errs(key, value)
 
 	return d
 }
 
 func (d Data) Bool(key string, value bool) Data {
-	d.ctx = d.ctx.Bool(key, value)
+	d.zctx = d.zctx.Bool(key, value)
 
 	return d
 }
 
 func (d Data) Bools(key string, value []bool) Data {
-	d.ctx = d.ctx.Bools(key, value)
+	d.zctx = d.zctx.Bools(key, value)
 
 	return d
 }
 
 func (d Data) Int(key string, value int) Data {
-	d.ctx = d.ctx.Int(key, value)
+	d.zctx = d.zctx.Int(key, value)
 
 	return d
 }
 
 func (d Data) Ints(key string, value []int) Data {
-	d.ctx = d.ctx.Ints(key, value)
+	d.zctx = d.zctx.Ints(key, value)
 
 	return d
 }
 
 func (d Data) Int8(key string, value int8) Data {
-	d.ctx = d.ctx.Int8(key, value)
+	d.zctx = d.zctx.Int8(key, value)
 
 	return d
 }
 
 func (d Data) Ints8(key string, value []int8) Data {
-	d.ctx = d.ctx.Ints8(key, value)
+	d.zctx = d.zctx.Ints8(key, value)
 
 	return d
 }
 
 func (d Data) Int16(key string, value int16) Data {
-	d.ctx = d.ctx.Int16(key, value)
+	d.zctx = d.zctx.Int16(key, value)
 
 	return d
 }
 
 func (d Data) Ints16(key string, value []int16) Data {
-	d.ctx = d.ctx.Ints16(key, value)
+	d.zctx = d.zctx.Ints16(key, value)
 
 	return d
 }
 
 func (d Data) Int32(key string, value int32) Data {
-	d.ctx = d.ctx.Int32(key, value)
+	d.zctx = d.zctx.Int32(key, value)
 
 	return d
 }
 
 func (d Data) Ints32(key string, value []int32) Data {
-	d.ctx = d.ctx.Ints32(key, value)
+	d.zctx = d.zctx.Ints32(key, value)
 
 	return d
 }
 
 func (d Data) Int64(key string, value int64) Data {
-	d.ctx = d.ctx.Int64(key, value)
+	d.zctx = d.zctx.Int64(key, value)
 
 	return d
 }
 
 func (d Data) Ints64(key string, value []int64) Data {
-	d.ctx = d.ctx.Ints64(key, value)
+	d.zctx = d.zctx.Ints64(key, value)
 
 	return d
 }
 
 func (d Data) Uint(key string, value uint) Data {
-	d.ctx = d.ctx.Uint(key, value)
+	d.zctx = d.zctx.Uint(key, value)
 
 	return d
 }
 
 func (d Data) Uints(key string, value []uint) Data {
-	d.ctx = d.ctx.Uints(key, value)
+	d.zctx = d.zctx.Uints(key, value)
 
 	return d
 }
 
 func (d Data) Uint8(key string, value uint8) Data {
-	d.ctx = d.ctx.Uint8(key, value)
+	d.zctx = d.zctx.Uint8(key, value)
 
 	return d
 }
 
 func (d Data) Bytes(key string, value []byte) Data {
-	d.ctx = d.ctx.Bytes(key, value)
+	d.zctx = d.zctx.Bytes(key, value)
 
 	return d
 }
 
 func (d Data) Uint16(key string, value uint16) Data {
-	d.ctx = d.ctx.Uint16(key, value)
+	d.zctx = d.zctx.Uint16(key, value)
 
 	return d
 }
 
 func (d Data) Uints16(key string, value []uint16) Data {
-	d.ctx = d.ctx.Uints16(key, value)
+	d.zctx = d.zctx.Uints16(key, value)
 
 	return d
 }
 
 func (d Data) Uint32(key string, value uint32) Data {
-	d.ctx = d.ctx.Uint32(key, value)
+	d.zctx = d.zctx.Uint32(key, value)
 
 	return d
 }
 
 func (d Data) Uints32(key string, value []uint32) Data {
-	d.ctx = d.ctx.Uints32(key, value)
+	d.zctx = d.zctx.Uints32(key, value)
 
 	return d
 }
 
 func (d Data) Uint64(key string, value uint64) Data {
-	d.ctx = d.ctx.Uint64(key, value)
+	d.zctx = d.zctx.Uint64(key, value)
 
 	return d
 }
 
 func (d Data) Uints64(key string, value []uint64) Data {
-	d.ctx = d.ctx.Uints64(key, value)
+	d.zctx = d.zctx.Uints64(key, value)
 
 	return d
 }
 
 func (d Data) Float32(key string, value float32) Data {
-	d.ctx = d.ctx.Float32(key, value)
+	d.zctx = d.zctx.Float32(key, value)
 
 	return d
 }
 
 func (d Data) Floats32(key string, value []float32) Data {
-	d.ctx = d.ctx.Floats32(key, value)
+	d.zctx = d.zctx.Floats32(key, value)
 
 	return d
 }
 
 func (d Data) Float64(key string, value float64) Data {
-	d.ctx = d.ctx.Float64(key, value)
+	d.zctx = d.zctx.Float64(key, value)
 
 	return d
 }
 
 func (d Data) Floats64(key string, value []float64) Data {
-	d.ctx = d.ctx.Floats64(key, value)
+	d.zctx = d.zctx.Floats64(key, value)
 
 	return d
 }
 
 func (d Data) Time(key string, value time.Time) Data {
-	d.ctx = d.ctx.Time(key, value)
+	d.zctx = d.zctx.Time(key, value)
 
 	return d
 }
 
 func (d Data) Times(key string, value []time.Time) Data {
-	d.ctx = d.ctx.Times(key, value)
+	d.zctx = d.zctx.Times(key, value)
 
 	return d
 }
 
 func (d Data) Duration(key string, value time.Duration) Data {
-	d.ctx = d.ctx.Dur(key, value)
+	d.zctx = d.zctx.Dur(key, value)
 
 	return d
 }
 
 func (d Data) Durations(key string, value []time.Duration) Data {
-	d.ctx = d.ctx.Durs(key, value)
+	d.zctx = d.zctx.Durs(key, value)
 
 	return d
 }
@@ -351,12 +363,18 @@ func (d Data) Durations(key string, value []time.Duration) Data {
 func (d Data) ObjectMarshallerJSON(key string, value json.Marshaler) Data {
 	data, err := value.MarshalJSON()
 	if err != nil {
-		d.ctx.Err(fmt.Errorf(key+" marshalling value as json: %w", err))
+		d.zctx = d.zctx.AnErr(key, fmt.Errorf("marshalling value as json: %w", err))
 
 		return d
 	}
 
-	d.ctx = d.ctx.Bytes(key, data)
+	d.zctx = d.zctx.Bytes(key, data)
+
+	return d
+}
+
+func (d Data) Stringer(key string, value fmt.Stringer) Data {
+	d.zctx = d.zctx.Stringer(key, value)
 
 	return d
 }

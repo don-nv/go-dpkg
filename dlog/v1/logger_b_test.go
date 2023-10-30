@@ -12,14 +12,6 @@ import (
 	"testing"
 )
 
-var ctx = dctx.New(dctx.WithNewXRequestID())
-
-func TestLogger_ObjectMarshallerJSON(t *testing.T) {
-	var consumer = NewConsumerLogger()
-
-	_ = consumer.LogObjectMarshallerJSON(ctx)
-}
-
 func BenchmarkLogger_Consumer(b *testing.B) {
 	var consumer = NewConsumerLogger()
 
@@ -27,7 +19,7 @@ func BenchmarkLogger_Consumer(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = consumer.LogBench(ctx)
+			_ = consumer.LogBench(ctx) //nolint:errcheck
 		}
 	})
 }
@@ -39,7 +31,7 @@ func BenchmarkZerolog_Consumer(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = consumer.LogBench(ctx)
+			_ = consumer.LogBench(ctx) //nolint:errcheck
 		}
 	})
 }
@@ -51,7 +43,7 @@ func BenchmarkZap_Consumer(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_ = consumer.LogBench(ctx)
+			_ = consumer.LogBench(ctx) //nolint:errcheck
 		}
 	})
 }
@@ -66,25 +58,29 @@ func NewConsumerLogger() ConsumerLogger {
 	}
 }
 
-func (c ConsumerLogger) LogBench(ctx context.Context) (err error) {
+func (c *ConsumerLogger) LogBench(ctx context.Context) (err error) {
 	var log = c.log.With().Name("logging_bench").Scope(ctx).Build()
-	defer log.WriteI("running...").Write("...done")
 	defer log.CatchE(&err)
 
-	log = log.With().Bytes("body", TestDataBytes).Build()
+	var info = log.I()
+	defer info.Write("running...").Write("...done")
 
-	return TestDataError
+	log = log.With().Bytes("body", BytesJSON).Build()
+
+	return Err
 }
 
 func (c ConsumerLogger) LogObjectMarshallerJSON(ctx context.Context) (err error) {
 	var log = c.log.With().Name("logging_object_marshaller_json").Scope(ctx).Build()
-	defer log.WriteI("running...").Write("...done")
 	defer log.CatchE(&err)
 
-	var object = NewTestDataObjectJSON()
+	var info = log.I()
+	defer info.Write("running...").Write("...done")
+
+	var object = NewDataObjectJSON()
 	log = log.With().ObjectMarshallerJSON("object_json", object).Build()
 
-	return TestDataError
+	return Err
 }
 
 type ConsumerZerolog struct {
@@ -119,9 +115,9 @@ func (c ConsumerZerolog) LogBench(ctx context.Context) (err error) {
 		}
 	}()
 
-	log = log.With().Bytes("body", TestDataBytes).Logger()
+	log = log.With().Bytes("body", BytesJSON).Logger()
 
-	return TestDataError
+	return Err
 }
 
 type ConsumerZap struct {
@@ -165,43 +161,42 @@ func (c ConsumerZap) LogBench(ctx context.Context) (err error) {
 		}
 	}()
 
-	log = log.With(zap.ByteString("body", TestDataBytes))
+	log = log.With(zap.ByteString("body", BytesJSON))
 
-	return TestDataError
+	return Err
 }
 
 var (
-	TestDataBytes = []byte("" +
+	BytesJSON = []byte("" +
 		"{\"glossary\": {\"title\": \"example glossary\",\"GlossDiv\": {\"title\": \"S\",\"GlossList\": " +
 		"{\"GlossEntry\": {\"ID\": \"SGML\",\"SortAs\": \"SGML\",\"GlossTerm\": \"Standard Generalized " +
 		"Markup Language\",\"Acronym\": \"SGML\",\"Abbrev\": \"ISO 8879:1986\",\"GlossDef\": {\"para\": " +
 		"\"A meta-markup language, used to create markup languages such as DocBook.\",\"GlossSeeAlso\": " +
 		"[\"GML\",\"XML\"]},\"GlossSee\": \"markup\"}}}}}",
 	)
-	TestDataError = errors.New("" +
-		"error error error error error error error error error " +
-		"error error error error error error error error error " +
-		"error error error error error error error error error " +
-		"error error error error error error error error error",
+	Err = errors.New("" +
+		"purus viverra accumsan in nisl nisi scelerisque eu ultrices vitae auctor eu augue ut lectus arcu bibendum at " +
+		"varius vel pharetra vel turpis nunc eget lorem dolor sed viverra ipsum nunc aliquet bibendum enim facilisis " +
+		"gravida neque convallis a cras",
 	)
 )
 
-type TestDataObjectJSON struct {
+type DataObjectJSON struct {
 	Field1 string `json:"field_1"`
 	Field2 string `json:"field_2"`
 	Field3 string `json:"field_3"`
 }
 
-func NewTestDataObjectJSON() TestDataObjectJSON {
-	return TestDataObjectJSON{
+func NewDataObjectJSON() DataObjectJSON {
+	return DataObjectJSON{
 		Field1: "value_1",
 		Field2: "value_2",
 		Field3: "value_3",
 	}
 }
 
-func (t TestDataObjectJSON) MarshalJSON() ([]byte, error) {
-	type Buff TestDataObjectJSON
+func (d DataObjectJSON) MarshalJSON() ([]byte, error) {
+	type Buff DataObjectJSON
 
-	return json.Marshal(Buff(t))
+	return json.Marshal(Buff(d))
 }

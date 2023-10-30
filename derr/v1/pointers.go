@@ -2,12 +2,7 @@ package derr
 
 import "errors"
 
-/*
-IsInP - is the same as IsIn, but `err` is a pointer.
-
-`err`:
-  - If nil, then result is false by default;
-*/
+// IsInP - is the same as IsIn, but `err` is a pointer.
 func IsInP(err *error, errs ...error) bool {
 	if err == nil {
 		err = P(nil)
@@ -27,6 +22,5 @@ func IsIn(err error, errs ...error) bool {
 	return false
 }
 
-func P(err error) *error {
-	return &err
-}
+// P - returns pointer to `err`.
+func P(err error) *error { return &err }
